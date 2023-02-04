@@ -8,13 +8,13 @@
  */
 
 import { WebGLRenderer, OrthographicCamera, Scene, Vector3, Clock } from 'three';
-import { FirstPersonControls } from 'three';
+import { PerspectiveCamera } from 'three';
 import SeedScene from './objects/Scene.js';
 
 const scene = new Scene();
-const camera = new OrthographicCamera();
+const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({antialias: true});
-const seedScene = new SeedScene();
+const seedScene = new SeedScene(camera);
 
 // scene
 seedScene.position.x -= 0.8;
@@ -26,11 +26,11 @@ scene.add(seedScene);
 
 camera.position.set(0.0,0.0,4.0);
 camera.lookAt(new Vector3(0.0,0.0,0.0));
-//camera.zoom = 0;
+camera.zoom = 8;
 
 // renderer
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setClearColor(0x0a0a0a, 1);
+renderer.setClearColor(0x2a2a2a, 1);
 
 const onAnimationFrameHandler = (timeStamp) => {
   renderer.render(scene, camera);
@@ -40,14 +40,14 @@ const onAnimationFrameHandler = (timeStamp) => {
 window.requestAnimationFrame(onAnimationFrameHandler);
 
 // resize
-const windowResizeHanlder = () => {
+const windowResizeHandler = () => {
   const { innerHeight, innerWidth } = window;
   renderer.setSize(innerWidth, innerHeight);
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
 };
-windowResizeHanlder();
-window.addEventListener('resize', windowResizeHanlder);
+windowResizeHandler();
+window.addEventListener('resize', windowResizeHandler);
 
 // dom
 document.body.style.margin = 0;

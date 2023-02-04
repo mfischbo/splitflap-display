@@ -2,46 +2,40 @@ import { Group, Clock } from 'three';
 import SplitFlap from './flap/splitflap.js';
 import CharSet from './Character.js';
 import BasicLights from './Lights.js';
+import { TextureLoader } from 'three';
+import FLAP_TEXTURE from '../textures/textures.js';
+import AudioService from './AudioService.js';
+import Display from './Display.js';
 
 export default class SeedScene extends Group {
 
-  constructor() {
+  constructor(camera) {
+
+    const textureLoader = new TextureLoader();
+    const audioService = new AudioService(camera);
+
     super();
-    this.flaps = [];
-    this.clock = new Clock();
-    var x = 0;
-    for (var i=0; i < 10; i++) {
-      for (var q=0; q < 4; q++) {
-
-         this.flaps[x] = new SplitFlap(0.18 * i, 0.36 * q);
-         this.add(this.flaps[x]);
-         x++;
-      }
-    }
-
+    this.display = new Display(5, 5, audioService, this);
     const lights = new BasicLights();
     this.add(lights);
+    this.camera = camera;
 
     let that = this;
     window.addEventListener('keyup', function(event) {
-      console.log(event);
 
+      audioService.resumeContext();
 
-      var display = "";
-      for (var i=0; i < that.flaps.length; i++) {
+      var text = "";
+      for (var i=0; i < 25; i++) {
           var rnd = Math.floor(Math.random() * 46);
           var character = CharSet.index(rnd);
-          display += character.letter;
-          that.flaps[i].rollTo(character.letter);
+          text += character.letter;
       }
-      console.log(display);
+      that.display.display(text);
     });
   }
 
   update(timeStamp) {
-    var delta = this.clock.getDelta();
-    this.flaps.forEach(function(e) {
-      e.update(delta);
-    });
+    this.display.update();
   }
 }

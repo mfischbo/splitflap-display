@@ -3,26 +3,22 @@ import { AnimationMixer } from 'three';
 import { ClampToEdgeWrapping } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import CharSet from '../Character.js';
-//import MODEL from './split-flap.glb';
 import GLB_MODEL from './splitflap-data.js';
-//import TEXTURE from '../../textures/fonts-170mm-85mm.png';
-import FLAP_TEXTURE from '../../textures/textures.js';
 
 export default class SplitFlap extends Group {
 
 
-  constructor(posX, posY) {
+  constructor(posX, posY, texture) {
 
     const loader = new GLTFLoader();
-    const textureLoader = new TextureLoader();
 
     super();
 
     this.textures = [];
-    this.textures[0] = textureLoader.load(FLAP_TEXTURE);
-    this.textures[1] = textureLoader.load(FLAP_TEXTURE);
-    this.textures[2] = textureLoader.load(FLAP_TEXTURE);
-    this.textures[3] = textureLoader.load(FLAP_TEXTURE);
+    this.textures[0] = texture.clone(true);//textureLoader.load(FLAP_TEXTURE);
+    this.textures[1] = texture.clone(true);//textureLoader.load(FLAP_TEXTURE);
+    this.textures[2] = texture.clone(true);//textureLoader.load(FLAP_TEXTURE);
+    this.textures[3] = texture.clone(true);//textureLoader.load(FLAP_TEXTURE);
 
     this.textures[0].center = new Vector2(0.5, 0.5);
     this.textures[0].rotation = -Math.PI / 2;
@@ -48,8 +44,8 @@ export default class SplitFlap extends Group {
     this.name = 'splitflap';
     this.actions = [];
     this.gltf = undefined;
-    this.frontFace = CharSet.char('K');
-    this.backFace = CharSet.char('A');
+    this.frontFace = CharSet.char('A');
+    this.backFace = CharSet.char('B');
     this.rollIndex = this.frontFace.index;
 
 
@@ -92,7 +88,7 @@ export default class SplitFlap extends Group {
         var action = that.mixer.clipAction(i);
         action.clampWhenFinished = true;
         action.setLoop(LoopRepeat, 100);
-        action.timeScale = 2;
+        action.timeScale = 2.5;
         that.actions.push(action);
       });
 
@@ -131,17 +127,23 @@ export default class SplitFlap extends Group {
     this.backFace = character;
   }
 
+  /**
+   * Runs the animation to the specified character.
+   * key - The character (as string) to be rolled to.
+   * returns the amount of animation loops until the character is reached
+   */
   rollTo(key) {
+
     var character = CharSet.char(key);
 
     // stop on unknown key
     if (!character) {
-      return;
+      return 0;
     }
 
     // do nothing if the front face already shows the character
     if (this.frontFace.index == character.index) {
-      return;
+      return 0;
     }
 
     // reset and launch the animation
@@ -150,7 +152,17 @@ export default class SplitFlap extends Group {
       action.reset();
       action.setLoop(LoopRepeat, 100);
     });
+
+    // calculate animation loops
+    let retval = 0;
+    if (this.frontFace.index <= character.index) {
+      retval = character.index - this.frontFace.index;
+    } else {
+      retval = 46 - this.frontFace.index + character.index;
+    }
+
     this.play();
+    return retval;
   }
 
   play() {
