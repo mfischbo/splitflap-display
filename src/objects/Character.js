@@ -62,6 +62,10 @@ class CharacterSet {
           new Character("-", 43, new Vector2(0.3510, 0.12), new Vector2(0.3510, -0.15)),
           new Character("?", 44, new Vector2(0.3710, 0.12), new Vector2(0.3710, -0.19)),
           new Character(" ", 45, new Vector2(0.3910, 0.12), new Vector2(0.3910, -0.19)),
+          new Character(":", 46, new Vector2(0.4110, 0.12), new Vector2(0.4110, -0.19)),
+          new Character("/", 47, new Vector2(0.4310, 0.12), new Vector2(0.4310, -0.19)),
+          new Character("*", 48, new Vector2(0.4510, 0.12), new Vector2(0.4510, -0.19)),
+          new Character("\"",49, new Vector2(0.4710, 0.12), new Vector2(0.4710, -0.19))
         ];
   }
 
@@ -71,6 +75,10 @@ class CharacterSet {
 
   index(idx) {
     return this.characters[idx];
+  }
+
+  size() {
+    return this.characters.length;
   }
 }
 

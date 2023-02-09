@@ -9,6 +9,10 @@ module.exports = {
     path: path.join(__dirname, buildPath),
     filename: '[name].[hash].js'
   },
+  devServer: {
+    port: 3000,
+    allowedHosts: "all"
+  },
   mode: 'development',
   target: 'web',
   devtool: 'source-map',

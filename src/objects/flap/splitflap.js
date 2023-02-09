@@ -3,7 +3,8 @@ import { AnimationMixer } from 'three';
 import { ClampToEdgeWrapping } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import CharSet from '../Character.js';
-import GLB_MODEL from './splitflap-data.js';
+//import GLB_MODEL from './splitflap-data.js';
+import GLB_MODEL from './split-flap-thin.glb';
 
 export default class SplitFlap extends Group {
 
@@ -15,10 +16,10 @@ export default class SplitFlap extends Group {
     super();
 
     this.textures = [];
-    this.textures[0] = texture.clone(true);//textureLoader.load(FLAP_TEXTURE);
-    this.textures[1] = texture.clone(true);//textureLoader.load(FLAP_TEXTURE);
-    this.textures[2] = texture.clone(true);//textureLoader.load(FLAP_TEXTURE);
-    this.textures[3] = texture.clone(true);//textureLoader.load(FLAP_TEXTURE);
+    this.textures[0] = texture.clone(true);
+    this.textures[1] = texture.clone(true);
+    this.textures[2] = texture.clone(true);
+    this.textures[3] = texture.clone(true);
 
     this.textures[0].center = new Vector2(0.5, 0.5);
     this.textures[0].rotation = -Math.PI / 2;
@@ -44,13 +45,23 @@ export default class SplitFlap extends Group {
     this.name = 'splitflap';
     this.actions = [];
     this.gltf = undefined;
-    this.frontFace = CharSet.char('A');
-    this.backFace = CharSet.char('B');
+    this.frontFace = CharSet.char(' ');
+    this.backFace = CharSet.char('A');
     this.rollIndex = this.frontFace.index;
-
 
     let that = this;
     loader.load(GLB_MODEL, (gltf) => {
+
+      gltf.scene.rotation.y = Math.PI / 2;
+      gltf.scene.rotation.z = Math.PI / 2;
+      gltf.scene.position.x = posX + 1.18;
+      gltf.scene.position.y = posY + 0.72;
+      gltf.scene.position.z = 1.00
+
+      this.scale.x = 0.6;
+      this.scale.y = 0.6;
+      this.position.z = 0.05;
+
       this.add(gltf.scene);
       this.mixer = new AnimationMixer(gltf.scene);
 
@@ -65,23 +76,20 @@ export default class SplitFlap extends Group {
         if (that.backFace.index == that.rollIndex) {
           that.mixer.stopAllAction();
           that.setFrontFace(that.backFace);
-          that.setBackFace(CharSet.index((that.backFace.index + 1) % 46));
+          that.setBackFace(CharSet.index((that.backFace.index + 1) % CharSet.size()));
           that.actions.forEach(function(action) {
             action.reset();
           });
           return;
         }
 
-        var nextIndex = (that.backFace.index + 1) % 46;
+        var nextIndex = (that.backFace.index + 1) % CharSet.size();
         that.setFrontFace(that.backFace);
         that.setBackFace(CharSet.index(nextIndex));
       });
 
       this.gltf = gltf;
-      gltf.scene.rotation.y = Math.PI / 2;
-      gltf.scene.rotation.z = Math.PI / 2;
-      gltf.scene.position.x = posX;
-      gltf.scene.position.y = posY;
+
 
 
       gltf.animations.forEach(function(i) {
@@ -146,27 +154,29 @@ export default class SplitFlap extends Group {
       return 0;
     }
 
+    // calculate animation loops
+    let loopCount = 0;
+    if (this.frontFace.index <= character.index) {
+      loopCount = character.index - this.frontFace.index;
+    } else {
+      loopCount = CharSet.size() - this.frontFace.index + character.index;
+    }
+
     // reset and launch the animation
     this.rollIndex = character.index;
     this.actions.forEach(function(action) {
       action.reset();
-      action.setLoop(LoopRepeat, 100);
+      action.setLoop(LoopRepeat, CharSet.size() + 1);
     });
 
-    // calculate animation loops
-    let retval = 0;
-    if (this.frontFace.index <= character.index) {
-      retval = character.index - this.frontFace.index;
-    } else {
-      retval = 46 - this.frontFace.index + character.index;
-    }
+
 
     this.play();
-    return retval;
+    return loopCount;
   }
 
   play() {
-    for (var i=0; i < this.actions.length; i++) {
+    for (var i=0; i < this.actions.length; ++i) {
       this.actions[i].play();
     }
   }
